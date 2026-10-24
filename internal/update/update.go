@@ -38,7 +38,7 @@ import (
 )
 
 // Site is magpie's home; its /api/latest is the update feed.
-const Site = "https://usemagpie.ai"
+const Site = "https://latentide.com"
 
 // Feed is where the newest release is described. MAGPIE_UPDATE_FEED points
 // it elsewhere, for testing an update against a local server.
@@ -46,7 +46,7 @@ func Feed() string {
 	if f := os.Getenv("MAGPIE_UPDATE_FEED"); f != "" {
 		return f
 	}
-	return Site + "/api/latest"
+	return Site + "/api/desktop/latest"
 }
 
 // Release is one published version.

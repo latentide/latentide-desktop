@@ -15813,10 +15813,22 @@ function intlLang() {
   return /^en(-|$)/i.test(sys) ? sys : "en";
 }
 
+// brand puts the product's name where the text says magpie, which is how
+// every string in this file is written (they are the keys). The Latentide
+// build names itself at this one place, so the keys, the other languages'
+// values and the tests that read them stay as upstream has them. A command,
+// a path, a variable or a URL (`magpie web`, ~/.config/magpie, MAGPIE_ADDR,
+// usemagpie.ai, magpie-community) is not the name and reads as written.
+const BRAND = "Latentide";
+const BRAND_RE = /(?<![\w.\/~`-])[Mm]agpie(?![\w`\/]|-[a-z]|\.[a-z])/g;
+function brand(s) {
+  return typeof s === "string" ? s.replace(BRAND_RE, BRAND) : s;
+}
+
 function t(s, vars) {
   let out = I18N[locale]?.[s] ?? s;
   if (vars) for (const k in vars) out = out.split("{" + k + "}").join(vars[k]);
-  return out;
+  return brand(out);
 }
 
 // tNotice is an agent's advice after a change (state.notice) in the
