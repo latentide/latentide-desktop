@@ -485,7 +485,7 @@ function renderAgents() {
       // in words like the rest, the row itself the link (or the command)
       const act = a.import ? importButton(a) : launchSolo(a);
       sum = el("span", "ag-sum");
-      sum.append(a.import ? el("span", "v" + (a.added ? "" : " empty"), a.added ? "magpie" : t("Add magpie")) : el("span", "v empty", t("Copy launch command")), el("span"));
+      sum.append(a.import ? el("span", "v" + (a.added ? "" : " empty"), a.added ? "Latentide" : t("Add magpie")) : el("span", "v empty", t("Copy launch command")), el("span"));
       const c = el("span", "chev");
       c.append(a.import ? svg(OUT, 10, 1.6) : svg(LAUNCH_GLYPH, 10, 1.5));
       sum.append(c);
@@ -1527,7 +1527,7 @@ function agentsLead(list) {
   lead.classList.toggle("welcome", first);
   if (!first) {
     const [pre, post] = t("Switch an agent on and the models you set up in magpie show up as the {magpie} provider in its own model list; or pick its model right here.").split("{magpie}");
-    lead.append(pre, el("b", "", "magpie"), post || "");
+    lead.append(pre, el("b", "", "Latentide"), post || "");
     return;
   }
   lead.append(el("b", "ag-lead-h", t("Let your agents use the models you set up in magpie")));
@@ -2557,7 +2557,7 @@ function importButton(a) {
   b.title = a.added
     ? t("{name} has magpie as a provider · click to add it again", { name: a.name })
     : t("Opens {name} to add magpie as a provider — confirm it there", { name: a.name });
-  b.append(icon("magpie"), el("span", "v" + (a.added ? "" : " empty"), a.added ? "magpie" : t("Add magpie")));
+  b.append(icon("magpie"), el("span", "v" + (a.added ? "" : " empty"), a.added ? "Latentide" : t("Add magpie")));
   const c = el("span", "chev");
   c.append(svg(OUT, 11, 1.6));
   b.append(c);
@@ -6210,6 +6210,9 @@ function renderFileError() {
 const DEPRECATED_WHY = "Some subscriptions are reached in ways their vendors' terms may not allow. So that magpie itself isn't banned over them, subscription providers are being decoupled from magpie and run by community plugins instead.";
 // deprecatedSub: a built-in subscription with a plugin, not moved onto it
 const deprecatedSub = (agent) => (providers?.movable || []).includes(agent) && !movedSub(agent);
+// SOLO: only Latentide can be added
+const SOLO = true;
+
 // unusedSub: a deprecated built-in with no account in magpie, which the
 // add sheet leaves to the Plugins page
 const unusedSub = (agent) => deprecatedSub(agent) && !(providers?.providers || []).some((p) => p.account?.agent === agent);
@@ -7316,12 +7319,12 @@ function renderAdd() {
     // (yetone: 对于新用户来说，这里应该只显示内置的 provider), unless it is
     // signing in now. A search naming one finds it there.
     const named = (x) => !f || x.name.toLowerCase().includes(f) || x.agent.includes(f) || "subscription".includes(f);
-    const subs = SUBS.filter((x) => !(replacedSub(x.agent) || unusedSub(x.agent)) || signing?.agent === x.agent).map((x) => subOf(x.agent)).filter(named);
-    const inPlugins = f && SUBS.some((x) => unusedSub(x.agent) && signing?.agent !== x.agent && named(subOf(x.agent)));
+    const subs = SOLO ? [] : SUBS.filter((x) => !(replacedSub(x.agent) || unusedSub(x.agent)) || signing?.agent === x.agent).map((x) => subOf(x.agent)).filter(named);
+    const inPlugins = !SOLO && f && SUBS.some((x) => unusedSub(x.agent) && signing?.agent !== x.agent && named(subOf(x.agent)));
     // partners pay to be listed first, under a heading that says so; who
     // they are comes from usemagpie.ai (internal/provider/partners.go), and
     // each may name the languages it is shown in
-    const partners = providers.presets.filter((p) => p.kind === "partner" && partnerShown(p) && (hit(p) || partnerNote(p).toLowerCase().includes(f)));
+    const partners = SOLO ? [] : providers.presets.filter((p) => p.kind === "partner" && partnerShown(p) && (hit(p) || partnerNote(p).toLowerCase().includes(f)));
     if (partners.length) {
       any = true;
       const grid = section("Partners", "magpie's sponsors");
@@ -7345,7 +7348,7 @@ function renderAdd() {
       const w = subs.find((x) => signing?.agent === x.agent);
       if (w) tiles.append(renderSigning(w));
     }
-    const plugged = pluginSubs().filter((x) => !(movedSub(x.agent) && SUBS.some((y) => y.agent === x.agent))).filter((x) => !f || x.name.toLowerCase().includes(f) || x.agent.includes(f) || "plugin".includes(f));
+    const plugged = SOLO ? [] : pluginSubs().filter((x) => !(movedSub(x.agent) && SUBS.some((y) => y.agent === x.agent))).filter((x) => !f || x.name.toLowerCase().includes(f) || x.agent.includes(f) || "plugin".includes(f));
     if (plugged.length) {
       any = true;
       const grid = section("From plugins", "signed in by an OpenCode plugin or a pi package");
@@ -7397,9 +7400,9 @@ function renderAdd() {
       b.onclick = () => { editing = { custom: true }; draft = null; renderProviders(); };
       const pl = el("button", "link", t("look for a plugin"));
       pl.onclick = () => openPlugins(presetQuery.trim());
-      none.append(b, t(", or "), pl);
+      if (!SOLO) none.append(b, t(", or "), pl);
       tiles.append(none);
-    } else if (!f) {
+    } else if (!f && !SOLO) {
       // a vendor not listed: one line under them all
       const foot = el("div", "custom-foot");
       const c = el("button", "custom" + (editing?.custom ? " on" : ""));

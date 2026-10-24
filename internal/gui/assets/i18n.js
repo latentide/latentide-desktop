@@ -15818,9 +15818,9 @@ function intlLang() {
 // build names itself at this one place, so the keys, the other languages'
 // values and the tests that read them stay as upstream has them. A command,
 // a path, a variable or a URL (`magpie web`, ~/.config/magpie, MAGPIE_ADDR,
-// usemagpie.ai, magpie-community) is not the name and reads as written.
+// usemagpie.ai, magpie-community, OPENAI_API_KEY=magpie) is not the name and reads as written.
 const BRAND = "Latentide";
-const BRAND_RE = /(?<![\w.\/~`-])[Mm]agpie(?![\w`\/]|-[a-z]|\.[a-z])/g;
+const BRAND_RE = /(?<![\w.\/~`=-])[Mm]agpie(?![\w`\/]|-[a-z]|\.[a-z])/g;
 function brand(s) {
   return typeof s === "string" ? s.replace(BRAND_RE, BRAND) : s;
 }
