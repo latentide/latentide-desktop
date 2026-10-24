@@ -31,7 +31,9 @@ import (
 
 // PartnersURL is where the list is kept; MAGPIE_PARTNERS moves it, and
 // MAGPIE_PARTNERS=off keeps to none.
-const PartnersURL = "https://usemagpie.ai/api/partners"
+// Latentide build: "off", so the sponsored list is never fetched (a test or
+// MAGPIE_PARTNERS can still name a source).
+const PartnersURL = "off"
 
 // KindPartner is a partner's Kind: the add sheet lists them apart.
 const KindPartner Kind = "partner"
