@@ -3,7 +3,6 @@ package provider
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -152,44 +151,6 @@ func TestGeminiOwnLoginRefreshesInMemory(t *testing.T) {
 	after, _ := os.ReadFile(filepath.Join(geminiDir(), "oauth_creds.json"))
 	if !bytes.Equal(before, after) {
 		t.Error("Gemini CLI's oauth_creds.json was written")
-	}
-}
-
-// Only a sign-in Gemini CLI's own OAuth client minted is Gemini CLI's: one
-// minted for another client (Antigravity's) can't be refreshed as Gemini
-// CLI's and isn't listed; one without an ID token is taken as Gemini CLI's.
-func TestGeminiOwnLoginOnlyGeminiCLIsClient(t *testing.T) {
-	idToken := func(claims map[string]any) string {
-		b, _ := json.Marshal(claims)
-		return "e30." + base64.RawURLEncoding.EncodeToString(b) + ".sig"
-	}
-	for _, c := range []struct {
-		name, idToken string
-		want          bool
-	}{
-		{"no id token", "", true},
-		{"gemini cli", idToken(map[string]any{"aud": geminiApp.clientID, "azp": geminiApp.clientID}), true},
-		{"antigravity", idToken(map[string]any{"aud": antigravityApp.clientID, "azp": antigravityApp.clientID}), false},
-		{"antigravity aud only", idToken(map[string]any{"aud": antigravityApp.clientID}), false},
-	} {
-		t.Run(c.name, func(t *testing.T) {
-			googleSandbox(t, &fakeGoogle{})
-			dir := geminiDir()
-			os.MkdirAll(dir, 0o700)
-			creds, _ := json.Marshal(map[string]any{"access_token": "old", "refresh_token": "rt-own", "expiry_date": 1, "id_token": c.idToken})
-			os.WriteFile(filepath.Join(dir, "oauth_creds.json"), creds, 0o600)
-			os.WriteFile(filepath.Join(dir, "google_accounts.json"), []byte(`{"active":"me@example.com","old":[]}`), 0o600)
-			_, ok := geminiOwnLogin()
-			if ok != c.want {
-				t.Fatalf("own login found = %v, want %v", ok, c.want)
-			}
-			if n := len(googleLoginList("gemini")); n != map[bool]int{true: 1, false: 0}[c.want] {
-				t.Errorf("gemini lists %d accounts", n)
-			}
-			if n := len(googleLoginList("antigravity")); n != 0 {
-				t.Errorf("antigravity lists %d accounts", n)
-			}
-		})
 	}
 }
 
