@@ -113,8 +113,19 @@ func bailianWorkspace(region string) string {
 var alibabaPlanModels = []string{"auto", "qwen3.8-max", "qwen3.8-flash", "qwen3.7-max", "qwen3.7-plus", "qwen3.6-flash",
 	"deepseek-v4.1-flash", "deepseek-v4-pro", "deepseek-v4-pro-0813", "deepseek-v4-flash-0731", "glm-5.3", "glm-5.2"}
 
-// presets are ordered as they appear in the picker.
+// LatentidePreset is the id of the one provider this build lets a user add.
+const LatentidePreset = "latentide"
+
+// presets are every vendor the code knows: their endpoints, model makers and
+// prices still feed the model lists and cost estimates, but only
+// LatentidePreset is offered for adding (see Presets).
 var presets = []PresetDef{
+	// 微澜 Latentide: one key, one base URL, all three protocols (the
+	// gateway translates between them).
+	{ID: LatentidePreset, Name: "微澜 Latentide", Short: "Latentide", Icon: "latentide", Kind: KindRelay,
+		Chat: "https://api.latentide.com/v1", Responses: "https://api.latentide.com/v1", Anthropic: "https://api.latentide.com",
+		Website: "https://latentide.com", KeysURL: "https://latentide.com",
+		KeyHint: "sk-…", Note: "one key for Claude, GPT, DeepSeek, GLM, Kimi and more"},
 	{ID: "anthropic", Name: "Anthropic", Icon: "claude-color", Kind: KindVendor, Catalog: "anthropic",
 		Anthropic: "https://api.anthropic.com",
 		Website:   "https://console.anthropic.com", KeysURL: "https://console.anthropic.com/settings/keys",
@@ -648,20 +659,15 @@ func mantleRegions(ids ...string) []Region {
 	return out
 }
 
-// Presets lists every preset, sponsored ones first within their kind.
+// Presets lists the providers a user can add: in the Latentide build, only
+// Latentide.
 func Presets() []PresetDef {
-	out := make([]PresetDef, 0, len(presets))
 	for _, p := range presets {
-		if p.Sponsored {
-			out = append(out, p)
+		if p.ID == LatentidePreset {
+			return []PresetDef{p}
 		}
 	}
-	for _, p := range presets {
-		if !p.Sponsored {
-			out = append(out, p)
-		}
-	}
-	return out
+	return nil
 }
 
 // presetAliases are ids presets carried before, each the preset since and
